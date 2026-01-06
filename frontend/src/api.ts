@@ -9,7 +9,11 @@ import {
   AnalyticsStats
 } from './types';
 
-const API_BASE = '/api';
+// Use deployed Worker URL in production, local proxy in development
+const isProd = typeof window !== 'undefined' && window.location.hostname !== 'localhost';
+const API_BASE = isProd 
+  ? 'https://ai-incident-triage.laukikpatade22.workers.dev/api'
+  : '/api';
 
 export async function createIncident(): Promise<string> {
   const response = await fetch(`${API_BASE}/incident`, {

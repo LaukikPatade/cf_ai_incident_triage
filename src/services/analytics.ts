@@ -6,6 +6,12 @@ export async function trackIncidentCreated(
   env: Env,
   incident: IncidentState
 ): Promise<void> {
+  // Skip if Analytics Engine is not available
+  if (!env.ANALYTICS) {
+    console.log(`[ANALYTICS] Incident created: ${incident.incidentId}`);
+    return;
+  }
+
   try {
     await env.ANALYTICS.writeDataPoint({
       blobs: [
@@ -28,6 +34,12 @@ export async function trackStageTransition(
   toStage: IncidentStage,
   service: string
 ): Promise<void> {
+  // Skip if Analytics Engine is not available
+  if (!env.ANALYTICS) {
+    console.log(`[ANALYTICS] Stage transition: ${fromStage} -> ${toStage}`);
+    return;
+  }
+
   try {
     await env.ANALYTICS.writeDataPoint({
       blobs: [
@@ -48,6 +60,12 @@ export async function trackIncidentCompleted(
   incident: IncidentState,
   diagnosis: DiagnosisResponse
 ): Promise<void> {
+  // Skip if Analytics Engine is not available
+  if (!env.ANALYTICS) {
+    console.log(`[ANALYTICS] Incident completed: ${incident.incidentId} (${diagnosis.severity})`);
+    return;
+  }
+
   try {
     const duration = Date.now() - incident.createdAt;
 
@@ -75,6 +93,11 @@ export async function trackUserMessage(
   incidentId: string,
   messageLength: number
 ): Promise<void> {
+  // Skip if Analytics Engine is not available
+  if (!env.ANALYTICS) {
+    return;
+  }
+
   try {
     await env.ANALYTICS.writeDataPoint({
       blobs: [incidentId, "user_message"],

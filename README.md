@@ -14,6 +14,8 @@ When production incidents occur, engineers often waste precious time trying to g
 
 **Live Demo**: https://cf-ai-incident-triage.pages.dev
 
+**Worker API**: https://ai-incident-triage.laukikpatade22.workers.dev
+
 **Local Development**: Follow the setup instructions below
 
 ## Features
@@ -83,7 +85,7 @@ When production incidents occur, engineers often waste precious time trying to g
 | **Workers KV** | Incident history storage and template management |
 | **Vectorize** | Semantic search for similar past incidents |
 | **Analytics Engine** | Incident metrics and trend tracking |
-| **Queues** | Async notification delivery for critical incidents |
+| **Queues** | Async notification delivery for critical incidents (paid plan) |
 | **R2** | Persistent storage for exported incident reports |
 | **Workers** | API gateway and request routing |
 

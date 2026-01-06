@@ -7,10 +7,10 @@ compatibility_date = "2024-01-01"
 name = "INCIDENT"
 class_name = "IncidentDurableObject"
 
-# Migrations for Durable Objects
+# Migrations for Durable Objects (using SQLite for free tier)
 [[migrations]]
 tag = "v1"
-new_classes = ["IncidentDurableObject"]
+new_sqlite_classes = ["IncidentDurableObject"]
 
 # Workers AI binding
 [ai]
@@ -19,40 +19,22 @@ binding = "AI"
 # KV Namespaces
 [[kv_namespaces]]
 binding = "INCIDENT_HISTORY"
-id = "preview_id_history"
-preview_id = "preview_id_history"
+id = "2821e8b3aa9349ceae0a57389bda0c94"
 
 [[kv_namespaces]]
 binding = "TEMPLATES"
-id = "preview_id_templates"
-preview_id = "preview_id_templates"
+id = "cfcc6b8bce2c4f7e9695157fe52038c6"
 
 # Vectorize for semantic search
 [[vectorize]]
 binding = "VECTORIZE"
 index_name = "incident-embeddings"
 
-# Analytics Engine
-[[analytics_engine_datasets]]
-binding = "ANALYTICS"
-
-# Queues for notifications
-[[queues.producers]]
-binding = "NOTIFICATION_QUEUE"
-queue = "incident-notifications"
-
-[[queues.consumers]]
-queue = "incident-notifications"
-max_batch_size = 10
-max_batch_timeout = 30
-
 # R2 for report storage
 [[r2_buckets]]
 binding = "INCIDENT_REPORTS"
 bucket_name = "incident-reports"
-preview_bucket_name = "incident-reports-preview"
 
 # CORS configuration
 [vars]
-ALLOWED_ORIGINS = "http://localhost:5173,http://localhost:8787"
-
+ALLOWED_ORIGINS = "http://localhost:5173,https://cf-ai-incident-triage.pages.dev,https://3c3bcdb9.cf-ai-incident-triage.pages.dev"

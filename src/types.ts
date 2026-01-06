@@ -78,8 +78,8 @@ export interface Env {
   INCIDENT_HISTORY: KVNamespace;
   TEMPLATES: KVNamespace;
   VECTORIZE: VectorizeIndex;
-  ANALYTICS: AnalyticsEngineDataset;
-  NOTIFICATION_QUEUE: Queue;
+  ANALYTICS?: AnalyticsEngineDataset; // Optional - requires enabling
+  NOTIFICATION_QUEUE?: Queue; // Optional - requires paid plan
   INCIDENT_REPORTS: R2Bucket;
   ALLOWED_ORIGINS?: string;
 }

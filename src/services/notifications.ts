@@ -21,6 +21,12 @@ export async function sendCriticalIncidentNotification(
     timestamp: Date.now(),
   };
 
+  // Skip if queue is not available (requires paid plan)
+  if (!env.NOTIFICATION_QUEUE) {
+    console.log(`[NOTIFICATION] Would notify: ${notification.summary}`);
+    return;
+  }
+
   try {
     await env.NOTIFICATION_QUEUE.send(notification);
     console.log(`Queued notification for ${incident.incidentId}`);

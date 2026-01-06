@@ -1,10 +1,9 @@
 // Main Cloudflare Worker - API Gateway and LLM Orchestration
 
-import { Env, SendMessageRequest, NotificationMessage } from "./types";
+import { Env, SendMessageRequest } from "./types";
 import { IncidentDurableObject } from "./incident";
 import * as historyService from "./services/history";
 import * as templateService from "./services/templates";
-import { handleNotificationQueue } from "./services/notifications";
 import { seedIncidents } from "./scripts/seed";
 
 export { IncidentDurableObject };
@@ -260,11 +259,6 @@ export default {
     }
 
     return new Response("Not found", { status: 404, headers: corsHeaders });
-  },
-  
-  // Queue consumer for notifications
-  async queue(batch: MessageBatch<NotificationMessage>, env: Env): Promise<void> {
-    await handleNotificationQueue(batch, env);
   },
 };
 
