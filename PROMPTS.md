@@ -1,230 +1,166 @@
 # AI Prompts Used in Development
 
-This document contains the AI prompts used during the development of the AI Incident Triage Assistant. AI-assisted coding was used extensively throughout the project.
+This document contains the AI prompts used during the development of the AI Incident Triage Assistant. The project was developed using Claude (via Cursor IDE) with a focus on leveraging Cloudflare's full platform capabilities.
 
-## Table of Contents
+## Development Approach
 
-1. [Initial Design & Planning](#initial-design--planning)
-2. [Core Implementation](#core-implementation)
-3. [Feature Development](#feature-development)
-4. [Bug Fixes & Debugging](#bug-fixes--debugging)
-5. [UI/UX Design](#uiux-design)
+The project was designed from the ground up to showcase **native Cloudflare platform integration**. Rather than building a generic application and bolting on Cloudflare services, each architectural decision was made to align with Cloudflare's edge-first philosophy:
 
----
-
-## Initial Design & Planning
-
-### Prompt 1: Project Architecture Design
-
-**Context**: Starting the project from scratch with requirements for a Cloudflare-based AI application.
-
-**Prompt**:
-```
-The Cloudflare software internship application has a take home assignment attached to it. 
-I asked ChatGPT for ideas and this is what it came up with. Help me implement it please:
-
-# AI Incident Triage Assistant — Design Document
-
-## Executive Summary
-A stateful, AI-powered incident triage assistant that lives at the edge. 
-It guides an on-call engineer through a deterministic workflow—intake → diagnose → recommend—
-using task-specific prompts, strong typing and Durable Objects for per-incident memory.
-
-[Full design document with architecture, workflow states, prompt engineering details, etc.]
-```
-
-**Result**: Complete project scaffold with Worker, Durable Objects, React frontend, and all service integrations.
+- **Durable Objects** for strongly consistent, per-incident state (not external databases)
+- **Workers AI** for inference at the edge (not external LLM APIs)
+- **KV** for eventually consistent history (matching its intended use case)
+- **Vectorize** for semantic search (native embedding storage)
+- **R2** for report persistence (S3-compatible object storage)
 
 ---
 
-## Core Implementation
+## Phase 1: Architecture & Core Implementation
 
-### Prompt 2: Durable Object State Management
+### Prompt 1: Initial System Design
 
-**Context**: Implementing the core incident state machine.
+**Goal**: Design an incident triage system that demonstrates Cloudflare's AI and stateful edge capabilities.
 
-**Prompt**:
 ```
-Implement the IncidentDurableObject class that:
-1. Maintains incident state (signals, conversation, stage)
-2. Handles message routing based on current stage
-3. Calls Workers AI for intake extraction and diagnosis generation
-4. Uses task-specific prompts for each stage
+Design an AI incident triage assistant using Cloudflare's platform:
+
+Requirements:
+1. Stateful conversation with per-incident isolation
+2. Structured workflow: intake → diagnosis → recommendations
+3. LLM-powered signal extraction and analysis
+4. Persistent incident history
+
+Cloudflare services to integrate:
+- Workers AI (Llama 3.3) for inference
+- Durable Objects for state management
+- Workers for API routing
+
+Design the architecture, data flow, and implementation approach.
 ```
 
-**Result**: Full Durable Object implementation with stage-based workflow and AI integration.
+**Outcome**: Complete system architecture with Durable Object state machine, task-specific prompts, and React frontend scaffold.
+
+### Prompt 2: Durable Object Implementation
+
+```
+Implement the IncidentDurableObject class:
+1. Maintain incident state (signals, conversation, workflow stage)
+2. Route messages based on current stage (INTAKE, DIAGNOSE, RECOMMEND)
+3. Call Workers AI with task-specific prompts
+4. Handle JSON extraction from LLM responses
+5. Manage stage transitions based on collected signals
+```
+
+**Outcome**: Full Durable Object with stage-based workflow and AI integration.
 
 ### Prompt 3: LLM Prompt Engineering
 
-**Context**: Creating effective prompts for the Llama 3.3 model.
-
-**Prompt**:
 ```
-Create prompts for:
-1. INTAKE stage - Extract structured signals from user messages (service, symptom, scope, etc.)
-   Output must be valid JSON
-2. DIAGNOSE stage - Generate diagnosis with severity, hypotheses, and recommendations
-   Based on all collected signals and conversation context
+Create prompts for Llama 3.3 that:
+1. INTAKE: Extract structured signals (service, symptom, scope, errors) as JSON
+2. DIAGNOSE: Generate severity, hypotheses, and recommendations
+
+Requirements:
+- Reliable JSON output
+- SRE-focused analysis
+- Actionable recommendations
 ```
 
-**Result**: Task-specific prompts with structured JSON output requirements and few-shot examples.
+**Outcome**: Task-specific prompts with structured output requirements.
 
 ---
 
-## Feature Development
+## Phase 2: Platform Service Integration
 
-### Prompt 4: Implementing Additional Cloudflare Services
+### Prompt 4: Expanding Cloudflare Integration
 
-**Context**: Expanding beyond the core functionality.
+**Goal**: Maximize use of Cloudflare's platform beyond the core requirements.
 
-**Prompt**:
 ```
-Let's think of more features. Maybe we can use the KV feature to cache incidents? 
-Are there any more features you can think of implementing?
-```
-
-**AI Response** (summarized):
+Extend the application to use additional Cloudflare services:
 - KV for incident history storage
-- Vectorize for semantic search of similar incidents
-- Analytics Engine for incident metrics
-- Queues for notification delivery
-- R2 for report storage
-- Templates for common incident types
+- Vectorize for semantic search of similar past incidents
+- R2 for storing exported incident reports
+- Analytics Engine for tracking incident metrics
+- Queues for async notification delivery
 
-**Follow-up Prompt**:
-```
-Let's implement all of them.
+Implement service integrations with proper error handling and fallbacks.
 ```
 
-**Result**: Full implementation of 6 additional Cloudflare services with corresponding API endpoints and frontend components.
+**Outcome**: Six additional service integrations with corresponding API endpoints and frontend components.
 
-### Prompt 5: Seeding Demo Data
+### Prompt 5: Semantic Search with Vectorize
 
-**Context**: Testing with realistic data.
-
-**Prompt**:
 ```
-1. The report is not being generated properly, it's empty
-2. We can definitely improve the dashboard and the history page
-3. I need you to seed the system with more incidents
+Implement semantic search for similar incidents:
+1. Generate embeddings using Workers AI (bge-base-en-v1.5)
+2. Store in Vectorize index
+3. Query for similar incidents based on symptom/service
+4. Return ranked results with similarity scores
 ```
 
-**Result**: Demo data seeding functionality with 15 realistic incident scenarios spanning different services, severities, and resolutions.
+**Outcome**: Vector-based incident similarity search with embedding generation.
 
 ---
 
-## Bug Fixes & Debugging
+## Phase 3: Workflow Refinement
 
-### Prompt 6: Workflow Transition Issue
+### Prompt 6: Stage Transition Logic
 
-**Context**: The application was stuck in the "Information Gathering" stage.
+**Context**: Initial implementation was too conservative with transitions.
 
-**Prompt**:
 ```
-The problem is that the application keeps demanding more details and never moves on to the diagnosis step.
-```
-
-**Result**: Modified transition logic to be more aggressive:
-- Transition after 4+ signals collected
-- Transition after 3+ user messages
-- Immediate diagnosis execution upon stage transition
-
-### Prompt 7: Frontend Rendering Error
-
-**Context**: Blank page after adding new components.
-
-**Prompt**:
-```
-[Error] ReferenceError: Can't find variable: KeyboardHelp
-App (App.tsx:248)
+The intake stage keeps asking questions indefinitely. Modify the transition logic to:
+1. Transition after collecting 4+ signals
+2. Transition after 3+ user messages
+3. Execute diagnosis immediately upon stage change
+4. Maintain quality while improving responsiveness
 ```
 
-**Result**: Added missing component import.
+**Outcome**: Balanced transition logic that gathers sufficient context without over-questioning.
 
-### Prompt 8: API Response Mismatch
+### Prompt 7: Immediate Diagnosis Execution
 
-**Context**: SimilarIncidents component crashing.
-
-**Prompt**:
 ```
-[Error] TypeError: undefined is not an object (evaluating 'similar.length')
-SimilarIncidents (SimilarIncidents.tsx:56)
+When transitioning from INTAKE to DIAGNOSE, the diagnosis wasn't appearing.
+Fix: Execute handleDiagnoseStage() immediately upon transition rather than 
+waiting for the next user message.
 ```
 
-**Result**: Updated frontend types and API client to match backend response structure (`incidentId` and `similarity` instead of `id` and `score`).
-
-### Prompt 9: Export Functionality Bug
-
-**Context**: Exported reports were empty.
-
-**Prompt**:
-```
-The report is not being generated properly, its empty @/Users/.../incident-1cdbc649.md
-```
-
-**Result**: Fixed ExportButton to correctly extract `result.markdown` from API response.
+**Outcome**: Seamless stage transition with immediate diagnosis display.
 
 ---
 
-## UI/UX Design
+## Phase 4: UI/UX Polish
 
-### Prompt 10: Initial UI Concerns
+### Prompt 8: Design System Implementation
 
-**Context**: The UI had visibility and design issues.
-
-**Prompt**:
 ```
-The title of the incident history and incident analytics is faded into the background. 
-We can definitely improve the colour scheme. 
-The constant appearance of emoticons makes the application look unprofessional. 
-I would like it to be functional with a sleek and minimalistic design.
-```
-
-**Result**: Complete dark theme redesign with:
-- White titles on dark backgrounds
-- Removed all emojis from UI code
-- Dark card backgrounds with subtle borders
-- Professional typography
-
-### Prompt 11: Layout Issues
-
-**Context**: Analytics dashboard not using full width.
-
-**Prompt**:
-```
-The incident analytics still looks centered and narrow but the incident history page is spread out and nice.
+Implement a professional, minimalist UI:
+1. Dark theme with proper contrast
+2. Remove decorative elements (emojis)
+3. Full-width layouts for dashboards
+4. Consistent typography and spacing
+5. Smooth transitions and hover states
 ```
 
-**Follow-up**:
+**Outcome**: Clean, professional interface with dark theme and responsive layouts.
+
+### Prompt 9: Dashboard Layout
+
 ```
-Now the cards are in a single column. Just have the content occupy the entire page man how difficult is it.
-```
-
-**Result**: Switched from CSS Grid to Flexbox with `flex: 1` for equal distribution, ensuring 4 stat cards and 2 charts spread across full width.
-
-### Prompt 12: Final Polish
-
-**Context**: Making the app presentation-ready.
-
-**Prompt**:
-```
-See if you can make any cosmetic changes to the application and make it appear 
-a bit more sleek and presentable with a minimalist design.
+Fix the analytics dashboard layout:
+- Cards should spread across full width
+- Use flexbox with equal distribution
+- Maintain responsiveness on different screen sizes
 ```
 
-**Result**: Comprehensive visual refresh:
-- Custom fonts (Outfit + JetBrains Mono)
-- Refined color palette with CSS variables
-- Custom scrollbars
-- Smooth transitions and hover effects
-- Consistent spacing and typography
-- Text-based avatars instead of emojis
+**Outcome**: Full-width dashboard with proper card distribution.
 
 ---
 
-## LLM Prompts in the Application
+## Application Prompts
 
-The application itself uses two main prompts for the AI assistant:
+The application uses two main prompts for the AI assistant:
 
 ### Intake Prompt (Signal Extraction)
 
@@ -233,7 +169,8 @@ export function getIntakePrompt(
   conversation: Message[],
   signals: IncidentSignals
 ): string {
-  return `You are an expert SRE incident triage assistant. Your task is to extract key signals from the user's description.
+  return `You are an expert SRE incident triage assistant. 
+Your task is to extract key signals from the user's description.
 
 CURRENT SIGNALS COLLECTED:
 ${JSON.stringify(signals, null, 2)}
@@ -241,19 +178,18 @@ ${JSON.stringify(signals, null, 2)}
 CONVERSATION SO FAR:
 ${conversation.map((m) => `${m.role.toUpperCase()}: ${m.content}`).join("\n")}
 
-Based on the latest user message, extract any NEW information about:
+Extract NEW information about:
 - service: Which service/component is affected?
 - symptom: What is the observable problem?
 - scope: Is it global, regional, or affecting specific users?
 - recentDeploy: Were there any recent deployments?
 - primaryError: What error messages are being seen?
 - dependencies: What upstream/downstream services might be involved?
-- environment: Is this prod, staging, etc.?
 
-RESPOND WITH VALID JSON ONLY in this format:
+RESPOND WITH VALID JSON ONLY:
 {
-  "extractedSignals": { /* only include fields with NEW information */ },
-  "followUpQuestion": "A clarifying question if more information is needed, or null if sufficient",
+  "extractedSignals": { /* only NEW information */ },
+  "followUpQuestion": "clarifying question or null",
   "readyForDiagnosis": true/false
 }`;
 }
@@ -266,7 +202,7 @@ export function getDiagnosisPrompt(
   conversation: Message[],
   signals: IncidentSignals
 ): string {
-  return `You are an expert SRE providing incident diagnosis. Based on all the information gathered, provide a comprehensive diagnosis.
+  return `You are an expert SRE providing incident diagnosis.
 
 SIGNALS:
 ${JSON.stringify(signals, null, 2)}
@@ -274,21 +210,21 @@ ${JSON.stringify(signals, null, 2)}
 CONVERSATION:
 ${conversation.map((m) => `${m.role.toUpperCase()}: ${m.content}`).join("\n")}
 
-Provide your diagnosis in this JSON format:
+Provide diagnosis as JSON:
 {
   "severity": "CRITICAL" | "HIGH" | "MEDIUM" | "LOW",
   "hypotheses": [
     {
-      "description": "Brief description of potential root cause",
+      "description": "potential root cause",
       "confidence": "HIGH" | "MEDIUM" | "LOW",
-      "reasoning": "Why this might be the cause"
+      "reasoning": "explanation"
     }
   ],
   "nextSteps": {
-    "immediate": ["Action 1", "Action 2"],
-    "deeper": ["Investigation step 1", "Investigation step 2"]
+    "immediate": ["action 1", "action 2"],
+    "deeper": ["investigation 1", "investigation 2"]
   },
-  "whatToMonitor": ["Metric 1", "Metric 2"]
+  "whatToMonitor": ["metric 1", "metric 2"]
 }`;
 }
 ```
@@ -297,20 +233,19 @@ Provide your diagnosis in this JSON format:
 
 ## Summary
 
-AI assistance was used throughout the development process for:
-- **Architecture design**: Translating requirements into a technical implementation plan
-- **Code generation**: Implementing Workers, Durable Objects, React components
-- **Debugging**: Identifying and fixing runtime errors and logic issues
-- **UI/UX refinement**: Iterating on the visual design based on feedback
-- **Documentation**: Creating this README and PROMPTS.md
+Development followed a systematic approach:
 
-The prompts evolved through conversation, with follow-up questions and error messages providing context for refinements. This iterative approach allowed rapid development while maintaining code quality.
+1. **Architecture First**: Designed around Cloudflare's platform capabilities
+2. **Core Implementation**: Built the state machine and AI integration
+3. **Platform Expansion**: Added KV, Vectorize, R2, and other services
+4. **Refinement**: Optimized workflow transitions and user experience
+5. **Polish**: Implemented professional UI with dark theme
+
+The iterative prompting approach allowed for rapid development while maintaining alignment with Cloudflare's edge-first philosophy.
 
 ---
 
 ## Tools Used
 
-- **Claude (Anthropic)**: Primary AI assistant for code generation and debugging
-- **Cursor IDE**: AI-integrated development environment
-- **ChatGPT (OpenAI)**: Initial brainstorming for project ideas
-
+- **Claude (Anthropic)**: Primary AI assistant via Cursor IDE
+- **Cursor**: AI-integrated development environment

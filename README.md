@@ -316,10 +316,6 @@ A deterministic workflow ensures:
 - [ ] Multi-user collaboration on incidents
 - [ ] Custom LLM fine-tuning for domain-specific triage
 
-## License
-
-MIT License - See [LICENSE](LICENSE) for details.
-
 ## Acknowledgments
 
 - Built for the Cloudflare AI Internship Application
