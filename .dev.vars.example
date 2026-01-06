@@ -1,0 +1,7 @@
+# Example environment variables for local development
+# Copy this file to .dev.vars and customize as needed
+
+# No secrets required for this application!
+# Workers AI is automatically available in your Worker environment
+# Durable Objects are configured in wrangler.toml
+
