@@ -109,7 +109,7 @@ When production incidents occur, engineers often waste precious time trying to g
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/cf_ai_incident_triage.git
+   git clone https://github.com/LaukikPatade/cf_ai_incident_triage.git
    cd cf_ai_incident_triage
    ```
 
